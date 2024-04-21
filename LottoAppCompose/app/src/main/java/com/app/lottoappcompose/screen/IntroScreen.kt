@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import com.app.lottoappcompose.R
 import com.app.lottoappcompose.ui.theme.LottoAppComposeTheme
 
@@ -31,6 +32,11 @@ fun ScreenIntro(modifier : Modifier){
 
     var selectScreen by remember {
         mutableStateOf("")
+    }
+
+
+    val onBackPressed = {
+        selectScreen = ""
     }
 
     if (selectScreen == ""){
@@ -44,7 +50,7 @@ fun ScreenIntro(modifier : Modifier){
         }
     }else if (selectScreen == "Lotto"){
         //로또 클릭 시
-
+        ShowLottoScreen(modifier,onBackPressed)
     }
 
 }
