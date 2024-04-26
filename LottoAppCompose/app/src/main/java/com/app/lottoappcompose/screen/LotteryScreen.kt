@@ -1,5 +1,7 @@
 package com.app.lottoappcompose.screen
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -38,16 +40,21 @@ import com.app.lottoappcompose.viewmodel.LotteryViewModel
 @Composable
 fun LotteryScreen(modifier: Modifier) {
     val viewModel: LotteryViewModel =viewModel()
-
+    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
+    var generateRandomNumbers by remember {
+        mutableStateOf(viewModel.randomNumbers)
+    }
 
-
+    val onClickLotteryButton = {
+        generateRandomNumbers = viewModel.generateRandomNumbers()
+    }
     val dialogClick ={
         showDialog = false
     }
 
     if (showDialog) {
-        CustomNumberDialog(dialogClick,modifier,viewModel)
+        CustomNumberDialog(dialogClick,modifier,viewModel,context)
     }
     Column(
         modifier
@@ -90,9 +97,9 @@ fun LotteryScreen(modifier: Modifier) {
                         Text(text = "제외수", style = MaterialTheme.typography.labelMedium)
                     }
                     Spacer(modifier = modifier.width(4.dp))
-                    if (viewModel.excludedNumberList.isNotEmpty()){
-                        for (i in 0..<viewModel.excludedNumberList.size){
-                            CircularExcludedNumberTextView(text = viewModel.excludedNumberList[i].toString(),modifier)
+                    if (viewModel.excludedNumberSet.isNotEmpty()){
+                        for (data in viewModel.excludedNumberSet){
+                            CircularExcludedNumberTextView(text = data.toString(),modifier)
                             Spacer(modifier = modifier.width(4.dp))
                         }
                     }
@@ -105,15 +112,16 @@ fun LotteryScreen(modifier: Modifier) {
             }
             DashedLine()
             Column(modifier.fillMaxWidth()) {
-                for (j in 1..5) {
+
+                generateRandomNumbers.forEach {numbers ->
                     Row(
                         modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp, horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        for (i in 1..5) {
-                            LotteryNumberTextView("1",modifier)
+                        numbers.forEach {number ->
+                            LotteryNumberTextView(number.toString(),modifier)
                         }
 
                     }
@@ -125,7 +133,7 @@ fun LotteryScreen(modifier: Modifier) {
                     .fillMaxWidth()
                     .padding(4.dp), horizontalArrangement = Arrangement.Center
             ) {
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = onClickLotteryButton) {
                     Text(text = "번호 추첨")
                 }
             }
@@ -172,48 +180,28 @@ fun LotteryNumberTextView(text: String, modifier: Modifier) {
         Text(
             text = text,
             color = Color.White, // 텍스트의 색상
-            modifier = modifier.fillMaxSize().padding(top = 13.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = 13.dp),
             textAlign = TextAlign.Center,
         )
 
     }
 }
 
-@Composable
-fun LotteryDialogTextView(text: String, modifier: Modifier,color : Color) {
-    Box(
-        modifier = modifier
-            .background(
-                color = color, // 원형 백그라운드의 색상
-                shape = CircleShape // 원형 모양으로 설정
-            )
-            .size(50.dp) // 원형 백그라운드의 크기 설정
-        , contentAlignment = Alignment.Center // 가운데 정렬
-
-    ) {
-        Text(
-            text = text,
-            color = Color.White, // 텍스트의 색상
-            modifier = modifier.fillMaxSize().padding(top = 13.dp),
-            textAlign = TextAlign.Center,
-        )
-
-    }
-}
 
 @Composable
 fun CustomNumberDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier,
-    viewModel: LotteryViewModel
+    viewModel: LotteryViewModel,
+    context: Context
 ) {
 
-    val buttonState = remember { mutableStateListOf<Boolean>() }
-    if (buttonState.size < 45){
-        for (i in 1..45){
-            buttonState.add(false)
-        }
+    var buttonEnabled by remember {
+        mutableStateOf(true)
     }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(dismissOnClickOutside = false)
@@ -241,7 +229,7 @@ fun CustomNumberDialog(
                             Box(
                                 modifier = modifier
                                     .background(
-                                        color = if(buttonState[index]) {
+                                        color = if (viewModel.buttonState[index]) {
                                             MaterialTheme.colorScheme.primary
                                         } else {
                                             Color.Gray
@@ -249,9 +237,21 @@ fun CustomNumberDialog(
                                         shape = CircleShape // 원형 모양으로 설정
                                     )
                                     .size(40.dp) // 원형 백그라운드의 크기 설정
-                                    .clickable {
-                                        buttonState[index] = !buttonState[index]
+                                    .clickable(enabled = buttonEnabled) {
+                                        if (viewModel.excludedNumberSet.size >= 5) {
+                                            buttonEnabled = false
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "제외수는 최대 5개까지 설정 가능합니다",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                            return@clickable
+                                        }
+                                        viewModel.changeButtonState(index)
                                         viewModel.addNumber(number)
+
                                     }
                                 , contentAlignment = Alignment.Center // 가운데 정렬
 
@@ -259,7 +259,9 @@ fun CustomNumberDialog(
                                 Text(
                                     text = number.toString(),
                                     color = Color.White, // 텍스트의 색상
-                                    modifier = modifier.fillMaxSize().padding(top = 8.dp),
+                                    modifier = modifier
+                                        .fillMaxSize()
+                                        .padding(top = 8.dp),
                                     textAlign = TextAlign.Center,
                                 )
 
@@ -287,7 +289,7 @@ fun CustomNumberDialog(
             }
             Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
                 Button(onClick = onDismissRequest) {
-                    Text("제외 수 저장")
+                    Text("제외수 저장")
                 }
             }
         }
