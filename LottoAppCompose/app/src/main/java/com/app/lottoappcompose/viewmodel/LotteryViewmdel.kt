@@ -12,10 +12,18 @@ class LotteryViewModel : ViewModel() {
     val excludedNumberSet: Set<Int>
         get() = _excludedNumberSet
 
+    private val _fixNumberSet = mutableSetOf<Int>()
+    val fixNumberSet: Set<Int>
+        get() = _fixNumberSet
+
     //버튼 클릭 상태
-    private val _buttonState = mutableStateListOf(false)
-    val buttonState: List<Boolean>
-        get() = _buttonState
+    private val _exButtonState = mutableStateListOf(false)
+    val exButtonState: List<Boolean>
+        get() = _exButtonState
+
+    private val _fixButtonState = mutableStateListOf(false)
+    val fixButtonState: List<Boolean>
+        get() = _fixButtonState
 
     private val _randomNumbers = mutableStateListOf<List<Int>>()
     val randomNumbers : List<List<Int>>
@@ -24,9 +32,15 @@ class LotteryViewModel : ViewModel() {
 
     init {
         // 생성자에서 초기화
-        if (_buttonState.size < 45){
+        if (_exButtonState.size < 45){
             for (i in 1..45){
-                _buttonState.add(false)
+                _exButtonState.add(false)
+            }
+        }
+        // 생성자에서 초기화
+        if (_fixButtonState.size < 45){
+            for (i in 1..45){
+                _fixButtonState.add(false)
             }
         }
     }
@@ -35,8 +49,12 @@ class LotteryViewModel : ViewModel() {
     fun generateRandomNumbers(): List<List<Int>> {
 
         _randomNumbers.clear()
+
         while (_randomNumbers.size < 5) {
             val randomNumbers = mutableListOf<Int>()
+            for (data in _fixNumberSet){
+                randomNumbers.add(data)
+            }
             while (randomNumbers.size < 6) {
                 val randomNumber = (1..45).random()
                 if (!_excludedNumberSet.contains(randomNumber)) {
@@ -48,10 +66,13 @@ class LotteryViewModel : ViewModel() {
         return _randomNumbers
     }
 
-    fun changeButtonState(number: Int){
-        _buttonState[number] = !_buttonState[number]
+    fun changeExButtonState(number: Int){
+        _exButtonState[number] = !_exButtonState[number]
     }
-    fun addNumber(number: Int) {
+    fun changeFixButtonState(number: Int){
+        _fixButtonState[number] = !_fixButtonState[number]
+    }
+    fun addExcludedNumber(number: Int) {
         if (_excludedNumberSet.size < 5) {
             //excludedNumberSet의 size 가 5가 이하일 경우(제외수는 최대 5개로 설정)
             if (_excludedNumberSet.contains(number)) {
@@ -62,15 +83,18 @@ class LotteryViewModel : ViewModel() {
             }
         }
     }
-    private fun resetButtonState(){
-        if (_buttonState.size < 45){
-            for (i in 1..45){
-                _buttonState.add(false)
+
+    fun addFixNumber(number: Int) {
+        if (_fixNumberSet.size < 5) {
+            //excludedNumberSet의 size 가 5가 이하일 경우(제외수는 최대 5개로 설정)
+            if (_fixNumberSet.contains(number)) {
+                //excludedNumberSet에 이미 고정수가 포함되어 있다면 삭제
+                _fixNumberSet.remove(number)
+            } else {
+                _fixNumberSet.add(number)
             }
         }
     }
-    fun clearNumber() {
-        _excludedNumberSet.clear()
-    }
+
 
 }
