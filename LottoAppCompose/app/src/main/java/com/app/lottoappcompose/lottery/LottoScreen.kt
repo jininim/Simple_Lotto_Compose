@@ -1,4 +1,4 @@
-package com.app.lottoappcompose.screen
+package com.app.lottoappcompose.lottery
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -51,7 +51,7 @@ fun ShowLottoScreen(modifier: Modifier, onBackPressed: () -> Unit) {
     ) { innerPadding ->
         NavHost(navController, startDestination = "screen1", Modifier.padding(innerPadding)) {
             composable("screen1") { LotteryScreen(modifier) }
-            composable("screen2") { LotteryStatisticsScreen(navController) }
+            composable("screen2") { LotteryStatisticsScreen() }
         }
     }
 }
@@ -102,10 +102,7 @@ fun currentRoute(navController: NavHostController): String? {
 
 
 
-@Composable
-fun LotteryStatisticsScreen(navController: NavHostController) {
-    Text(text = "Statistics")
-}
+
 
 
 

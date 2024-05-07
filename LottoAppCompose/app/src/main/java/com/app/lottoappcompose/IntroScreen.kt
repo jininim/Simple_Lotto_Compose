@@ -1,4 +1,4 @@
-package com.app.lottoappcompose.screen
+package com.app.lottoappcompose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
-import com.app.lottoappcompose.R
+import com.app.lottoappcompose.lottery.ShowLottoScreen
 import com.app.lottoappcompose.ui.theme.LottoAppComposeTheme
 
 
@@ -92,11 +91,10 @@ fun ShowNavigationButton(modifier: Modifier, onLottoClick: () -> Unit,
 
     @Preview(showBackground = true, showSystemUi = true)
     @Composable
-    fun GreetingPreview() {
+    private fun GreetingPreview() {
         LottoAppComposeTheme {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
                 ScreenIntro(Modifier)
-
             }
 
         }

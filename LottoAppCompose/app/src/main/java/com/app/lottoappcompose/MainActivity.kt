@@ -9,7 +9,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.lottoappcompose.screen.ScreenIntro
 import com.app.lottoappcompose.ui.theme.LottoAppComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -33,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun GreetingPreview() {
+private fun GreetingPreview() {
     LottoAppComposeTheme {
         ScreenIntro(modifier = Modifier)
     }

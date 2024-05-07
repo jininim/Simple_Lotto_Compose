@@ -1,4 +1,4 @@
-package com.app.lottoappcompose.util
+package com.app.lottoappcompose.component
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
